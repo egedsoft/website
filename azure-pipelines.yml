@@ -25,7 +25,7 @@ stages:
       displayName: Build an image
       inputs:
         containerRegistry: 'guywizards-docker-hub'
-        repository: 'https://hub.docker.com/repository/docker/guywizards'
+        repository: 'guywizards/website'
         command: 'buildAndPush'
         Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
         tags: |
