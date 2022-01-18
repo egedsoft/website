@@ -25,6 +25,7 @@ stages:
       displayName: Build an image
       inputs:
         containerRegistry: 'guywizards-docker-hub'
+        repository: 'nite'
         command: 'buildAndPush'
         Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
         tags: |
