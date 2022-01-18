@@ -25,8 +25,7 @@ stages:
       displayName: Build an image
       inputs:
         containerRegistry: 'guywizards-docker-hub'
-        repository: 'guywizards'
-        command: 'build'
+        command: 'buildAndPush'
         Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
         tags: |
           $(tag)
