@@ -1,0 +1,19 @@
+apiVersion : apps/v1
+kind: Deployment
+metadata:
+  name: egedsoftwebsite 
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: egedsoftwebsite
+  template:
+    metadata:
+      labels:
+        app: egedsoftwebsite 
+    spec:
+      containers:
+        - name: egedsoftwebsite 
+          image: gmdockerreg.azurecr.io/egedsoftwebsite
+          ports:
+          - containerPort: 80
