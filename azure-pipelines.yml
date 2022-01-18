@@ -10,7 +10,7 @@ resources:
 
 variables:
   imageRepo: guywizards
-  imageName: website
+  imageName: test-website
   tag: '$(Build.BuildId)'
 
 stages:
@@ -26,7 +26,7 @@ stages:
       displayName: Build an image
       inputs:
         containerRegistry: 'guywizards-docker-hub'
-        repository: 'guywizards/test/website'
+        repository: '$(imageRepo)/$(imageName)'
         command: 'buildAndPush'
         Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
         tags: |
