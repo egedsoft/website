@@ -9,7 +9,7 @@ resources:
 - repo: self
 
 variables:
-  imageRepo: website
+  imageRepo: guywizards
   tag: '$(Build.BuildId)'
 
 stages:
