@@ -31,20 +31,26 @@ stages:
         tags: |
           $(tag)
           latest
-- stage:
-  displayName: Terraform
+- stage: Provision
+  displayName: 'Terraforming on Azure...'
+  dependsOn: Build
   jobs:
-  - job: Terraform
-    displayName: Terraform
+  - job: Provision
+    displayName: 'Provisioning Container Instance'
     pool:
-      vmImage: ubuntu-latest
-    steps:    
-    - task: TerraformCLI@0
-      inputs:
-        command: 'init'
-        backendType: 'azurerm'
-        backendServiceArm: 'Visual Studio Enterprise Subscription – MPN(a0297ccb-b2e1-4572-9ff7-85bfcea0e8bd)'
-        allowTelemetryCollection: true
+      vmImage: 'ubuntu-latest'
+    variables: 
+    - group: TeraformEnvVars
+    steps:
     - script: |
         set -e
-        terraform apply -input=false -auto-approve 
+        terraform init -input=false
+        terraform apply -input=false -auto-approve
+      name: 'RunTerraform'
+      displayName: 'Run Terraform'
+      env:
+        ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+        ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+        ARM_TENANT_ID: $(ARM_TENANT_ID)
+        # ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+        # TF_VAR_imagebuild: $(tag)
