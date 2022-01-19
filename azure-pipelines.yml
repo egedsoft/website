@@ -31,6 +31,14 @@ stages:
         tags: |
           $(tag)
           latest
+- stage:
+  displayName: Terraform
+  jobs:
+  - job: Terraform
+    displayName: Terraform
+    pool:
+      vmImage: ubuntu-latest
+    steps:    
     - task: TerraformCLI@0
       inputs:
         command: 'init'
