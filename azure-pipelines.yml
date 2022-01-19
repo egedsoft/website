@@ -78,32 +78,30 @@ stages:
   displayName: Deploy to Dev
   dependsOn: Provision
   jobs:
-  - deployment: Deploy
+  - job: Deploy
     displayName: Deploy to AKS
     pool:
       vmImage: $(vmImageName)
-    strategy: 
-      runOnce:
-        deploy:
-          steps:
-                - task: DownloadPipelineArtifact@2
-                  inputs:
-                    buildType: 'current'
-                    artifactName: 'manifests'
-                    targetPath: '$(Pipeline.Workspace)/manifests'
-                - task: KubernetesManifest@0
-                  inputs:
-                    action: 'deploy'
-                    connectionType: Azure Resource Manager
-                    azureSubscriptionEndpoint: $(azureSubscriptionEndpoint)
-                    azureResourceGroup: $(azureResourceGroup)
-                    kubernetesCluster: $(kubernetesCluster)
-                    useClusterAdmin: $(useClusterAdmin)                    
-                    #kubernetesServiceConnection: 'a-aks1-default-1642616477980'
-                    namespace: $(namespace)
-                    manifests: |
-                      $(Pipeline.Workspace)/manifests/deployment.yaml
-                      $(Pipeline.Workspace)/manifests/service.yaml
+
+    steps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: 'current'
+              artifactName: 'manifests'
+              targetPath: '$(Pipeline.Workspace)/manifests'
+          - task: KubernetesManifest@0
+            inputs:
+              action: 'deploy'
+              connectionType: Azure Resource Manager
+              azureSubscriptionEndpoint: $(azureSubscriptionEndpoint)
+              azureResourceGroup: $(azureResourceGroup)
+              kubernetesCluster: $(kubernetesCluster)
+              useClusterAdmin: $(useClusterAdmin)                    
+              #kubernetesServiceConnection: 'a-aks1-default-1642616477980'
+              namespace: $(namespace)
+              manifests: |
+                $(Pipeline.Workspace)/manifests/deployment.yaml
+                $(Pipeline.Workspace)/manifests/service.yaml
 
 
 
