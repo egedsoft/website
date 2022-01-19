@@ -15,6 +15,12 @@ variables:
   k8sNamespace: default  
   vmImageName: ubuntu-latest
   namespace: default
+
+  azureSubscriptionEndpoint: 'VS Subscription Service Connaction'
+  azureResourceGroup: AKS-RG
+  kubernetesCluster: aks1
+  useClusterAdmin: false
+
 stages:
 - stage: Build
   displayName: Build image
@@ -88,7 +94,12 @@ stages:
                 - task: KubernetesManifest@0
                   inputs:
                     action: 'deploy'
-                    kubernetesServiceConnection: 'a-aks1-default-1642616477980'
+                    connectionType: Azure Resource Manager
+                    azureSubscriptionEndpoint: $(azureSubscriptionEndpoint)
+                    azureResourceGroup: $(azureResourceGroup)
+                    kubernetesCluster: $(kubernetesCluster)
+                    useClusterAdmin: $(useClusterAdmin)                    
+                    #kubernetesServiceConnection: 'a-aks1-default-1642616477980'
                     namespace: $(namespace)
                     manifests: |
                       $(Pipeline.Workspace)/manifests/deployment.yaml
