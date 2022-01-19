@@ -14,6 +14,7 @@ variables:
   tag: '$(Build.BuildId)'
   k8sNamespace: default  
   vmImageName: ubuntu-latest
+  namespace: default
 stages:
 - stage: Build
   displayName: Build image
@@ -33,11 +34,7 @@ stages:
         tags: |
           $(tag)
           latest
-    - task: PublishPipelineArtifact@1
-      inputs:
-        targetPath: '$(Pipeline.Workspace)/s/kubernetes'
-        artifact: 'manifests'
-        publishLocation: 'pipeline'        
+      
 
 
 - stage: Provision
@@ -64,29 +61,41 @@ stages:
         ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
         # TF_VAR_imagebuild: $(tag)
 
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: '$(Pipeline.Workspace)/s/kubernetes'
+        artifact: 'manifests'
+        publishLocation: 'pipeline'  
+
 
 - stage: Deploy 
   displayName: Deploy to Dev
   dependsOn: Provision
   jobs:
-  - job: Deploy
+  - deployment: Deploy
     displayName: Deploy to AKS
     pool:
       vmImage: $(vmImageName)
-    steps:
-          - task: DownloadPipelineArtifact@2
-            inputs:
-              buildType: 'current'
-              artifactName: 'manifests'
-              targetPath: '$(Pipeline.Workspace)/manifests'
-          - task: KubernetesManifest@0
-            inputs:
-              action: 'deploy'
-              kubernetesServiceConnection: 'a-aks1-default-1642616477980'
-              namespace: 'default'
-              manifests: |
-                $(Pipeline.Workspace)/manifests/deployment.yaml
-                $(Pipeline.Workspace)/manifests/service.yaml
+    strategy: 
+      runOnce:
+        deploy:
+          steps:
+                - task: DownloadPipelineArtifact@2
+                  inputs:
+                    buildType: 'current'
+                    artifactName: 'manifests'
+                    targetPath: '$(Pipeline.Workspace)/manifests'
+                - task: KubernetesManifest@0
+                  inputs:
+                    action: 'deploy'
+                    kubernetesServiceConnection: 'a-aks1-default-1642616477980'
+                    namespace: $(namespace)
+                    manifests: |
+                      $(Pipeline.Workspace)/manifests/deployment.yaml
+                      $(Pipeline.Workspace)/manifests/service.yaml
+
+
+
 
 
 # - stage: Deploy
