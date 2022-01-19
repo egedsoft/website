@@ -12,6 +12,8 @@ variables:
   imageRepo: guywizards
   imageName: test-website
   tag: '$(Build.BuildId)'
+  k8sNamespace: default  
+  vmImageName: ubuntu-latest
 stages:
 - stage: Build
   displayName: Build image
@@ -19,7 +21,7 @@ stages:
   - job: Build
     displayName: Build
     pool:
-      vmImage: ubuntu-latest
+      vmImage: $(vmImageName)
     steps:
     - task: Docker@2
       displayName: Build an image
@@ -30,7 +32,11 @@ stages:
         Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
         tags: |
           $(tag)
-          
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: '$(Pipeline.Workspace)/s/kubernetes'
+        artifact: 'manifests'
+        publishLocation: 'pipeline'          
 - stage: Provision
   displayName: 'Terraforming on Azure...'
   dependsOn: Build
@@ -38,7 +44,7 @@ stages:
   - job: Provision
     displayName: 'Provisioning Container Instance'
     pool:
-      vmImage: 'ubuntu-latest'
+      vmImage: $(vmImageName)
     variables: 
     - group: TeraformEnvVars
     steps:
@@ -54,3 +60,42 @@ stages:
         ARM_TENANT_ID: $(ARM_TENANT_ID)
         ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
         # TF_VAR_imagebuild: $(tag)
+
+# - stage: Deploy
+#   displayName: Deploy stage
+#   dependsOn: Build
+#   jobs:
+#   - deployment: Deploy
+#     displayName: Deploy job
+#     pool:
+#       vmImage: $(vmImageName)
+#     environment: 'azooinmyluggagepipelinesjavascriptdocker.aksnamespace'
+#     strategy:
+#       runOnce:
+#         deploy:
+#           steps:
+#           - task: DownloadPipelineArtifact@2
+#             inputs:
+#               artifactName: 'manifests'
+#               downloadPath: '$(System.ArtifactsDirectory)/manifests'
+
+#           - task: KubernetesManifest@0
+#             displayName: Create imagePullSecret
+#             inputs:
+#               action: createSecret
+#               secretName: $(imagePullSecret)
+#               namespace: $(k8sNamespace)
+#               dockerRegistryEndpoint: $(dockerRegistryServiceConnection)
+              
+#           - task: KubernetesManifest@0
+#             displayName: Deploy to Kubernetes cluster
+#             inputs:
+#               action: deploy
+#               namespace: $(k8sNamespace)
+#               manifests: |
+#                 $(System.ArtifactsDirectory)/manifests/deployment.yml
+#                 $(System.ArtifactsDirectory)/manifests/service.yml
+#               imagePullSecrets: |
+#                 $(imagePullSecret)
+#               containers: |
+#                 $(containerRegistry)/$(imageRepository):$(tag)
