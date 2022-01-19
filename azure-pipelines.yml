@@ -37,7 +37,9 @@ stages:
       inputs:
         targetPath: '$(Pipeline.Workspace)/s/kubernetes'
         artifact: 'manifests'
-        publishLocation: 'pipeline'          
+        publishLocation: 'pipeline'        
+
+
 - stage: Provision
   displayName: 'Terraforming on Azure...'
   dependsOn: Build
@@ -61,6 +63,24 @@ stages:
         ARM_TENANT_ID: $(ARM_TENANT_ID)
         ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
         # TF_VAR_imagebuild: $(tag)
+
+
+- stage: Deploy 
+  displayName: Deploy to Dev
+  dependsOn: Build
+  jobs:
+  - job: Deploy
+    displayName: Deploy to AKS
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: 'current'
+              artifactName: 'manifests'
+              targetPath: '$(Pipeline.Workspace)/manifests'
+        
+
 
 # - stage: Deploy
 #   displayName: Deploy stage
