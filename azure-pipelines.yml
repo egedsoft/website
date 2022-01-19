@@ -31,3 +31,9 @@ stages:
         tags: |
           $(tag)
           latest
+    - task: TerraformCLI@0
+      inputs:
+        command: 'init'
+        backendType: 'azurerm'
+        backendServiceArm: 'Visual Studio Enterprise Subscription – MPN(a0297ccb-b2e1-4572-9ff7-85bfcea0e8bd)'
+        allowTelemetryCollection: true
