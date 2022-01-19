@@ -15,12 +15,6 @@ variables:
   k8sNamespace: default  
   vmImageName: ubuntu-latest
   namespace: default
-
-  azureSubscriptionEndpoint: 'VS Subscription Service Connaction'
-  azureResourceGroup: AKS-RG
-  kubernetesCluster: aks1
-  useClusterAdmin: false
-
 stages:
 - stage: Build
   displayName: Build image
@@ -78,30 +72,29 @@ stages:
   displayName: Deploy to Dev
   dependsOn: Provision
   jobs:
-  - job: Deploy
+  - deployment: Deploy
     displayName: Deploy to AKS
+    environment: 'aks1.default'
     pool:
       vmImage: $(vmImageName)
-
-    steps:
-          - task: DownloadPipelineArtifact@2
-            inputs:
-              buildType: 'current'
-              artifactName: 'manifests'
-              targetPath: '$(Pipeline.Workspace)/manifests'
-          - task: KubernetesManifest@0
-            inputs:
-              action: 'deploy'
-              connectionType: Azure Resource Manager
-              azureSubscriptionEndpoint: $(azureSubscriptionEndpoint)
-              azureResourceGroup: $(azureResourceGroup)
-              kubernetesCluster: $(kubernetesCluster)
-              useClusterAdmin: $(useClusterAdmin)                    
-              #kubernetesServiceConnection: 'a-aks1-default-1642616477980'
-              namespace: $(namespace)
-              manifests: |
-                $(Pipeline.Workspace)/manifests/deployment.yaml
-                $(Pipeline.Workspace)/manifests/service.yaml
+    strategy: 
+      runOnce:
+        deploy:
+          steps:
+                - task: DownloadPipelineArtifact@2
+                  inputs:
+                    buildType: 'current'
+                    artifactName: 'manifests'
+                    targetPath: '$(Pipeline.Workspace)/manifests'
+                - task: KubernetesManifest@0
+                  inputs:
+                    action: 'deploy'
+                
+                    #kubernetesServiceConnection: 'aks.default'
+                    namespace: $(namespace)
+                    manifests: |
+                      $(Pipeline.Workspace)/manifests/deployment.yaml
+                      $(Pipeline.Workspace)/manifests/service.yaml
 
 
 
